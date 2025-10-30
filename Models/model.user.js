@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import { queryDB } from "../Utilities/pgPool.js";
-import { generateToken } from "../Utilities/token.js";
-import { insertUserToken } from "./session.js";
+import { generateToken, insertUserToken } from "../Utilities/token.js";
 
 export const getAllUsersHelper = async () => {
   const { rows } = await queryDB(
