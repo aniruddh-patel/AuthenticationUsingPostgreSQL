@@ -1,6 +1,6 @@
 import { validateEmail } from "../Utilities/validator.js";
 import { validateName } from "../Utilities/validator.js"
-import { getAllUsersHelper, getProfileHelper, signUpHelper, loginHelper, updateUserHelper, deleteUserHelper,reactivateAccountHelper} from "../Models/model.user.js";
+import { getAllUsersHelper, getProfileHelper, signUpHelper, loginHelper, updateUserHelper, deleteUserHelper,reactivateAccountHelper} from "../Models/UserModel.js";
 import { expireToken, deleteAllTokenDB, deleteLogoutToken} from "../Utilities/token.js";
 
 export const getAllHandler = async (req, res) => {
