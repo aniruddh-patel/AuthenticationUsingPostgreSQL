@@ -2,17 +2,30 @@ import express from "express"
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import UserRoute from "./Routes/UserRoute.js"
+import CartRoute from "./Routes/CartRoute.js"
+import OrderRoute from "./Routes/OrderRoute.js"
+import ProductRoute from "./Routes/ProductRoute.js"
+import SellerRoute from "./Routes/SellerRoute.js"
+import { mongoConnect } from "./Connections/MongoDB.js";
 
-dotenv.config({ path: './Configuration/.env' }); /*FOR MULTIPLE ENV FILE WE CAN SEND ARRAY IN PATH */
+dotenv.config({ path: './Configuration/.env' }); 
 const PORT=process.env.PORT || 8001
 const HOST=process.env.HOST_ADDRESS
 
 const app = express();
-app.use(express.json())                           /*THIS IS USED TO PARSE BODY JSON DATA INTO JS OBJECT FORMAT AND PUT INTO BODY OBJ */
+app.use(express.json());
 app.use(cookieParser());
-// app.use(express.urlencoded({extended:true}))   /*THIS IS USED FOR FORMDATA RECIVED FROM HTML FORM ON BUTTON SUBMIT*/
+mongoConnect();
 
-app.use("/api/v1",UserRoute)
+
+
+app.use("/api/v1/user",UserRoute)
+app.use("/api/v1/cart",CartRoute)
+app.use("/api/v1/order",OrderRoute)
+app.use("/api/v1/product",ProductRoute)
+app.use("/api/v1/seller",SellerRoute)
+
+
 
 app.listen(PORT, ()=>{
     console.log(`Server is running on http://${HOST}:${PORT}`);

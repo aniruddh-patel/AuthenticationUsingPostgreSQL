@@ -12,7 +12,7 @@ const pool = new Pool({
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 3000,
 });
-pool.on('connect', () => console.log('Connected to PostgreSQL'));
+pool.on('connect', () => console.log('PostgreSQL running'));
 pool.on('error', (err) => console.error('PostgreSQL pool error', err));
 
 export default pool;

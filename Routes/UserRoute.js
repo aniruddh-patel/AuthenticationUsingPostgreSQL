@@ -1,18 +1,16 @@
 import express from "express"
-import { logoutHandler, deleteHandler, getAllHandler, loginHandler, profileHandler, signUpHandler, updateHandler, reactivateAccountHandler } from "../Controllers/UserController.js";
-import {authenticateToken } from "../Middlewares/tokenValidation.js"
+import { logoutHandler, deleteHandler, loginHandler, profileHandler, signUpHandler, updateHandler, reactivateAccountHandler } from "../Controllers/UserController.js";
+import {UserAuthToken } from "../Middlewares/tokenValidation.js"
 
 const router = express.Router();
 
-router.get("/users",authenticateToken, getAllHandler);
-router.get("/user/profile/",authenticateToken, profileHandler);
-
-router.post("/user/login",loginHandler);
-router.post("/user/signup",signUpHandler);
-router.post("/user/reactivate",reactivateAccountHandler);
-router.post("/user/logout",authenticateToken,logoutHandler)
-router.put("/user/update/",authenticateToken, updateHandler);
-router.delete("/user/account/",authenticateToken, deleteHandler);
+router.post("/account/login",loginHandler);
+router.post("/account/signup",signUpHandler);
+router.post("/account/reactivate",reactivateAccountHandler);
+router.get("/account/profile",UserAuthToken, profileHandler);
+router.post("/account/logout",UserAuthToken,logoutHandler)
+router.put("/account/update",UserAuthToken, updateHandler);
+router.delete("/account/delete",UserAuthToken, deleteHandler);
 
 export default router;
 
