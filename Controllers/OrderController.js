@@ -1,4 +1,4 @@
-import {findUserOrderById, listOrdersHelper, createOrderHelpher, cancelOrderHelpher} from "../Models/OrderModel.js";
+import {findUserOrderById, listOrdersHelper, createOrderHelpher, cancelOrderHelpher, deliveredOrderHelper} from "../Models/OrderModel.js";
 import mongoose from "mongoose";
 
 export const listOrdersHandler = async (req, res) => {
@@ -55,3 +55,25 @@ export const cancelOrderHandler = async (req, res) => {
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
+
+
+export const deliveredOrderHandler =async(req,res)=>{
+  try{
+  const userId = req.user.user_id
+  const order_id=req.params.id;
+  
+  if(!order_id)return res.status(400).json({ success:false, message: "Missing order_id" });
+
+  const result=deliveredOrderHelper(userId,order_id);
+  if (result.rowCount === 0) {
+      return res.status(404).json({success: false, message: "Order not found or not authorized" });
+    }
+
+    res.status(200).json({success: true, message: "Order marked as Delivered successfully" });
+  } catch (error) {
+    console.error("Error marking order as delivered:", error);
+    res.status(500).json({success: false, message: "Internal Server Error" });
+  }
+};
+
+

@@ -6,6 +6,7 @@ import CartRoute from "./Routes/CartRoute.js"
 import OrderRoute from "./Routes/OrderRoute.js"
 import ProductRoute from "./Routes/ProductRoute.js"
 import SellerRoute from "./Routes/SellerRoute.js"
+import ReportsRoute from "./Routes/ReportsRoute.js"
 import { mongoConnect } from "./Connections/MongoDB.js";
 
 dotenv.config({ path: './Configuration/.env' }); 
@@ -24,6 +25,7 @@ app.use("/api/v1/cart",CartRoute)
 app.use("/api/v1/order",OrderRoute)
 app.use("/api/v1/product",ProductRoute)
 app.use("/api/v1/seller",SellerRoute)
+app.use("/api/v1/reports",ReportsRoute)
 
 
 

@@ -1,10 +1,10 @@
 import express from "express";
-import {ProductHandler,listProductHandler,createProductHandler,updateProductHandler,deleteProductHandler,sellerProductsHandler} from "../Controllers/ProductController.js";
+import {ProductHandler,listProductsHandler,createProductHandler,updateProductHandler,deleteProductHandler,sellerProductsHandler} from "../Controllers/ProductController.js";
 import { UserAuthToken, SellerAuthToken } from "../Middlewares/tokenValidation.js";
 
 const router = express.Router();
 // for user
-router.get("/items",listProductHandler);
+router.get("/items",listProductsHandler);
 router.get("/item/:id",ProductHandler);
 
 // for seller

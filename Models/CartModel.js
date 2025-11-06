@@ -45,11 +45,11 @@ export const addToCartHelpher = async (user_id, user_email, productId, product_n
 
     // cart already presnt
     if (cart) {
-      const exists = cart.items.some((item) =>item.product_id===productId);
+      const exists = cart.items.some((item) => item.product_id === productId);
       if (exists) {
         return { success: false, message: "Item already in cart" };
       }
-      cart.items.push({product_id: productId,product_name,price});
+      cart.items.push({ product_id: productId, product_name, price });
       await cart.save();
       return { success: true, message: "Item added to cart", cart };
     }
@@ -57,7 +57,7 @@ export const addToCartHelpher = async (user_id, user_email, productId, product_n
     // no cart present
     const newCart = new Cart({
       user: { user_id, user_email },
-      items: [{product_id: productObjectId,product_name,price,}]
+      items: [{ product_id: productObjectId, product_name, price, }]
     });
     await newCart.save();
     return { success: true, message: "Item added to cart", cart: newCart };

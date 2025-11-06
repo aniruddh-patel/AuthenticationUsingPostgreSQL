@@ -9,14 +9,6 @@ export const ProductHelper = async (productID)=>{
   }
 }
 
-export const listProductHelpher = async () => {
-  try {
-    const products = await Product.find().sort({ created_at: -1 });
-    return products;
-  } catch (error) {
-    throw new Error("Database query failed");
-  }
-};
 
 ///////////////////////***********************************//////////////////////////////////
 
@@ -64,3 +56,48 @@ export const sellerProductsHelpher = async (seller_id) => {
     throw new Error("Database query failed");
   }
 };
+
+
+// ///////////////////////
+export const filterAndListProductsHelper = async (filters) => {
+  try {
+    const {keyword,minPrice,maxPrice,category,brand,page,limit,} = filters;
+    const query = {};
+
+    if (keyword) {
+      const regex = new RegExp(keyword, "i");
+      query.$or = [
+        { product_name: regex },
+        { product_description: regex },
+        { category: regex },
+        { brand: regex },
+      ];
+    }
+
+    if (minPrice !== null || maxPrice !== null) {
+      query.price = {};
+      if (minPrice !== null) query.price.$gte = minPrice;
+      if (maxPrice !== null) query.price.$lte = maxPrice;
+    }
+
+    if (category) query.category = category;
+    if (brand) query.brand = brand;
+
+    const totalCount = await Product.countDocuments(query);
+    const skip = (page - 1) * limit;
+
+    const products = await Product.find(query)
+      .skip(skip)
+      .limit(limit);
+
+    return {
+      products,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+    };
+    
+  } catch (error) {
+    throw new Error("Error filtering products: " + error.message);
+  }
+};
+
