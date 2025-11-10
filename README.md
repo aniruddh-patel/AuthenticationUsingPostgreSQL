@@ -180,7 +180,7 @@ Stores **user session tokens** for authentication persistence.
 | Method | Endpoint | Middleware | Description |
 |--------|-----------|-------------|-------------|
 | GET | `/getdata` | `SellerAuthToken` | Generate seller sales report (pending & delivered orders) |
-
+| GET | `/all`     |                   | Generate all seller sales report (pending, cancelled & delivered orders) |
 ---
 
 ## ⚙️ Core Functionalities
