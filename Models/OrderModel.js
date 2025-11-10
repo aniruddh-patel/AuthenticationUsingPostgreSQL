@@ -14,7 +14,6 @@ const resultData = await Product.updateOne({ _id: productId, stock_quantity: { $
 if (resultData.modifiedCount === 0) {
   throw new Error('Out of stock');
 }
-console.log(resultData);
 
 const result = await queryDB(
     "INSERT INTO order_table (product_id, user_id, status) VALUES ($1, $2, 'pending') RETURNING *;",
