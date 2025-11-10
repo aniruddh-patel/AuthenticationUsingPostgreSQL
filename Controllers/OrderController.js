@@ -16,13 +16,14 @@ export const listOrdersHandler = async (req, res) => {
 export const createOrderHandler = async (req, res) => {
   const userId = req.user.user_id;
   const product_id = req.params.id;
+  const seller_info = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(product_id)) {
         return res.status(400).json({ success: false, message: "Invalid product ID" });
       }
 
   try {
-    const newOrder = await createOrderHelpher (product_id, userId);
+    const newOrder = await createOrderHelpher (product_id, userId,seller_info);
     res.status(201).json({success: true,message: "Order created successfully",order: newOrder});
   } catch (error) {
     if (error.message === "Out of stock") {

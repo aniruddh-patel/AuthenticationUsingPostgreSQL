@@ -1,95 +1,3 @@
-// import { queryDB } from "../Utilities/pgPool.js";
-// import Product from "../Schemas/productSchema.js";
-
-// export const getSellerReportHelper = async (seller_id, month, year) => {
-//     try {
-//         const sellerProducts = await Product.find({ "seller_info.seller_id": seller_id });
-//         const productIds = sellerProducts.map(p => p._id.toString());
-
-//         if (productIds.length === 0) {
-//             return {
-//                 month,
-//                 year,
-//                 total_orders: 0,
-//                 total_sales: 0,
-//                 pending_orders: 0,
-//                 delivered_orders: 0,
-//                 cancelled_orders: 0,
-//                 products_sold: [],
-//             };
-//         }
-
-//         const query = `
-//       SELECT status, product_id, order_timestamp, delivered_date
-//       FROM order_table
-//       WHERE product_id = ANY($1)
-//         AND EXTRACT(MONTH FROM order_timestamp) = $2
-//         AND EXTRACT(YEAR FROM order_timestamp) = $3;
-//     `;
-
-//         const { rows } = await queryDB(query, [productIds, month, year]);
-
-//         if (rows.length === 0) {
-//             return {
-//                 month,
-//                 year,
-//                 total_orders: 0,
-//                 total_sales: 0,
-//                 pending_orders: 0,
-//                 delivered_orders: 0,
-//                 cancelled_orders: 0,
-//                 products_sold: [],
-//             };
-//         }
-
-//         let totalOrders = rows.length;
-//         let deliveredOrders = 0;
-//         let cancelledOrders = 0;
-//         let pendingOrders = 0;
-//         let totalSales = 0;
-
-//         const productSalesCount = {};
-//         for (const order of rows) {
-//             if (order.status.toLowerCase() === "delivered") deliveredOrders++;
-//             else if (order.status.toLowerCase() === "cancelled") cancelledOrders++;
-//             else pendingOrders++;
-
-//             if (order.status.toLowerCase() === "delivered") {
-//                 const product = sellerProducts.find(p => p._id.toString() === order.product_id);
-//                 if (product) {
-//                     totalSales += product.price;
-//                     productSalesCount[order.product_id] = (productSalesCount[order.product_id] || 0) + 1;
-//                 }
-//             }
-//         }
-
-
-//         //report format
-//         const productsSold = sellerProducts
-//             .filter(p => productSalesCount[p._id.toString()])
-//             .map(p => ({
-//                 product_id: p._id,
-//                 product_name: p.product_name,
-//                 units_sold: productSalesCount[p._id.toString()],
-//                 price: p.price,
-//                 total_revenue: p.price * productSalesCount[p._id.toString()],
-//             }));
-
-//         return {
-//             month,
-//             year,
-//             total_orders: totalOrders,
-//             total_sales: totalSales,
-//             pending_orders: pendingOrders,
-//             delivered_orders: deliveredOrders,
-//             cancelled_orders: cancelledOrders,
-//             products_sold: productsSold,
-//         };
-//     } catch (error) {
-//         throw new Error("Error generating seller report: " + error.message);
-//     }
-// };
-
 import Product from "../Schemas/productSchema.js";
 import { queryDB } from "../Utilities/pgPool.js";
 
@@ -202,4 +110,23 @@ export const getSellerReportHelper = async (seller_id, month, year) => {
         summary,
         breakdown,
     };
+};
+
+
+export const AllSellerSalesReportHelper = async () => {
+  const query = `
+    SELECT 
+      seller_id,
+      shop_name,
+      COUNT(*) FILTER (WHERE LOWER(status) = 'delivered') AS delivered,
+      COUNT(*) FILTER (WHERE LOWER(status) = 'pending') AS pending,
+      COUNT(*) FILTER (WHERE LOWER(status) = 'cancelled') AS cancelled
+    FROM order_table
+    GROUP BY seller_id, shop_name
+    ORDER BY seller_id;
+  `;
+
+  const { rows } = await queryDB(query);
+
+  return rows; 
 };
