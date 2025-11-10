@@ -40,6 +40,70 @@ Each user type has its **own authentication system** and set of APIs for secure 
 
 ---
 
+#### **1️⃣ user_info**
+Stores **customer account details**.
+
+| Column | Type | Nullable | Default |
+|---------|------|-----------|----------|
+| user_id | integer | not null | `nextval('user_auth_user_id_seq'::regclass)` |
+| user_email | character varying(255) | not null |  |
+| user_name | character varying(100) | not null |  |
+| password_hash | text | not null |  |
+| phone | character varying(15) | not null |  |
+| address | text | not null |  |
+| gender | character varying(10) |  |  |
+| is_active | boolean |  | `true` |
+| created_at | timestamp without time zone |  | `CURRENT_TIMESTAMP` |
+| account_type | character varying(255) |  | `'customer'::character varying` |
+
+---
+
+#### **2️⃣ seller_info**
+Stores **seller account and business details**.
+
+| Column | Type | Nullable | Default |
+|---------|------|-----------|----------|
+| seller_id | character varying(10) | not null |  |
+| seller_name | character varying(100) | not null |  |
+| seller_email | character varying(255) | not null |  |
+| password_hash | text | not null |  |
+| gst_number | character varying(20) | not null |  |
+| shop_name | character varying(100) | not null |  |
+| shop_address | text | not null |  |
+| phone_number | character varying(15) | not null |  |
+| verified | boolean |  | `false` |
+| is_active | boolean |  | `true` |
+| account_type | character varying(255) |  | `'seller'::character varying` |
+
+---
+
+#### **3️⃣ order_table**
+Stores **order information** for each user and product.
+
+| Column | Type | Nullable | Default |
+|---------|------|-----------|----------|
+| order_id | integer | not null | `nextval('order_table_order_id_seq'::regclass)` |
+| product_id | character varying(50) | not null |  |
+| user_id | integer | not null |  |
+| order_timestamp | timestamp without time zone |  | `CURRENT_TIMESTAMP` |
+| status | character varying(20) |  | `'pending'::character varying` |
+| delivered_date | timestamp without time zone |  |  |
+
+---
+
+#### **4️⃣ user_tokens**
+Stores **user session tokens** for authentication persistence.
+
+| Column | Type | Nullable | Default |
+|---------|------|-----------|----------|
+| token_id | integer | not null | `nextval('user_tokens_token_id_seq'::regclass)` |
+| user_id | integer | not null |  |
+| token | text | not null |  |
+| created_at | timestamp without time zone |  | `CURRENT_TIMESTAMP` |
+
+---
+
+
 ## 🔐 Authentication System
 - Initially implemented with **JWT-based authentication**.
 - Enhanced later with **database token persistence** for improved session control using the `user_tokens` table.
@@ -121,7 +185,7 @@ Each user type has its **own authentication system** and set of APIs for secure 
 
 ## ⚙️ Core Functionalities
 - ✅ User Authentication & Profile Management  
-- ✅ Seller Authentication & Product Management  
+- ✅ Seller Authentication & Profile Management & Product Management  
 - ✅ Cart and Order System  
 - ✅ Dynamic Report Generation for Sellers  
 - ✅ Database-based Token Management for Persistent Sessions  
@@ -132,5 +196,5 @@ Each user type has its **own authentication system** and set of APIs for secure 
 
 ### 1️⃣ Clone the Repository
 ```bash
-git clone https://github.com/yourusername/ecommerce-backend.git
-cd ecommerce-backend
+git clone https://github.com/aniruddh-patel/AuthenticationUsingPostgreSQL
+cd AuthenticationUsingPostgreSQL
