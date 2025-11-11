@@ -1,4 +1,5 @@
 import { createProductHelpher, deleteProductHelpher, filterAndListProductsHelper, ProductHelper, sellerProductsHelpher, updateProductHelpher } from "../Models/ProductModel.js";
+import { Category } from "../Schemas/productSchema.js";
 
 export const listProductsHandler = async (req, res) => {
   try {
@@ -61,7 +62,19 @@ export const createProductHandler = async (req, res) => {
     if (!product_name || !price) {
       return res.status(400).json({ success: false, message: "Product name and price are required" });
     }
-    const newProduct = await createProductHelpher({ seller_info: [{ shop_name, seller_id }], product_name, product_description, price, discount, stock_quantity, category, brand, images });
+    let categoryIds = [];
+    if (category) {
+      const categoryDoc = await Category.findOne({ name: category });
+      if (!categoryDoc) {
+        return res.status(400).json({
+          success: false,
+          message: `Category "${category}" does not exist in master`,
+        });
+      }
+      categoryIds = [categoryDoc._id];
+    }
+
+    const newProduct = await createProductHelpher({ seller_info: [{ shop_name, seller_id }], product_name, product_description, price, discount, stock_quantity, categoryIds, brand, images });
     res.status(201).json({ success: true, message: "Product created successfully", data: newProduct });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error while creating product", error: error.message });

@@ -1,8 +1,38 @@
-import Product from "../Schemas/productSchema.js"
+import mongoose from "mongoose";
+import Product, { Category } from "../Schemas/productSchema.js"
 
 export const ProductHelper = async (productID)=>{
   try {
-    const product=await Product.findById(productID);
+    const product = await Product.findById(productID)
+      .populate("categoryIds", "name")
+
+    // const product=await Product.aggregate([
+    //   {$match :{_id:new mongoose.Types.ObjectId(productID)}},
+    //   {
+    //     $lookup:{
+    //       from:"categories",
+    //       localField:"categoryIds",
+    //       foreignField:"_id",
+    //       as:"categories"
+    //     }
+    //   },
+    //   {
+    //     $project: {
+    //       product_name: 1,
+    //       product_description: 1,
+    //       price: 1,
+    //       discount: 1,
+    //       stock_quantity: 1,
+    //       brand: 1,
+    //       images: 1,
+    //       seller_info: 1,
+    //       created_at: 1,
+    //       updated_at: 1,
+    //       "categories.name": 1
+    //     }
+    //   }
+    // ])
+
     return product;
   } catch (error) {
     throw new Error("Database query failed");
@@ -30,7 +60,7 @@ export const updateProductHelpher = async (seller_id, product_id, updateData) =>
       { _id: product_id, "seller_info.seller_id": seller_id },
       { $set: updateData },
       { new: true }
-    );
+    ).populate("categoryIds", "name");
     return updatedProduct;
   } catch (error) {
     throw new Error("Failed to update product");
@@ -50,7 +80,8 @@ export const sellerProductsHelpher = async (seller_id) => {
   try {
     const products = await Product.find({
       "seller_info.seller_id": seller_id
-    });
+    }).populate("categoryIds", "name")
+    
     return products;
   } catch (error) {
     throw new Error("Database query failed");
@@ -69,7 +100,6 @@ export const filterAndListProductsHelper = async (filters) => {
       query.$or = [
         { product_name: regex },
         { product_description: regex },
-        { category: regex },
         { brand: regex },
       ];
     }
@@ -80,7 +110,10 @@ export const filterAndListProductsHelper = async (filters) => {
       if (maxPrice !== null) query.price.$lte = maxPrice;
     }
 
-    if (category) query.category = category;
+    if (category) {
+      const categoryDoc = await Category.findOne({ name: category });
+      query.categoryIds = categoryDoc ? categoryDoc._id : null;
+    }
     if (brand) query.brand = brand;
 
     const totalCount = await Product.countDocuments(query);
@@ -88,7 +121,8 @@ export const filterAndListProductsHelper = async (filters) => {
 
     const products = await Product.find(query)
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate("categoryIds", "name");
 
     return {
       products,
