@@ -1,9 +1,10 @@
 import { createProductHelpher, deleteProductHelpher, filterAndListProductsHelper, ProductHelper, sellerProductsHelpher, updateProductHelpher } from "../Models/ProductModel.js";
 import { Category } from "../Schemas/productSchema.js";
+import redis from "../Connections/RedisCacheDB.js";
 
 export const listProductsHandler = async (req, res) => {
   try {
-    const {keyword = null,minPrice = null,maxPrice = null,category = null,brand = null,page = 1,limit = 5,} = req.query;
+    const { keyword = null, minPrice = null, maxPrice = null, category = null, brand = null, page = 1, limit = 5, } = req.query;
 
     const filters = {
       keyword: keyword ? keyword.trim() : null,
@@ -15,6 +16,16 @@ export const listProductsHandler = async (req, res) => {
       limit: Number(limit),
     };
 
+    const cacheKey = `products:${JSON.stringify(filters)}`;
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return res.status(200).json({
+        success: true,
+        fromCache: true,
+        ...JSON.parse(cachedData),
+      });
+    }
+
     const { products, totalCount, totalPages } = await filterAndListProductsHelper(filters);
 
     if (!products || products.length === 0) {
@@ -24,14 +35,22 @@ export const listProductsHandler = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      success: true,
+    const responseData = {
       count: products.length,
       totalProducts: totalCount,
       totalPages,
       currentPage: page,
       data: products,
+    };
+
+    await redis.set(cacheKey, JSON.stringify(responseData), "EX", 600);
+
+    res.status(200).json({
+      success: true,
+      fromCache: false,
+      ...responseData,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -45,13 +64,26 @@ export const ProductHandler = async (req, res) => {
   try {
     const productID = req.params.id;
     if (!productID) return res.status(404).json({ success: false, message: "No productId found" })
+
+    const cacheKey = `product:${productID}`;
+    const cachedProduct = await redis.get(cacheKey);
+    if (cachedProduct) {
+      return res.status(200).json({
+        success: true,
+        fromCache: true,
+        message: "Product found (from cache)",
+        result: JSON.parse(cachedProduct),
+      });
+    }
+
     const product = await ProductHelper(productID);
     if (!product) {
       return res.status(404).json({ success: false, message: "product not found" });
     }
-    res.status(200).json({ success: true, message: "product found", result: product })
+    await redis.set(cacheKey, JSON.stringify(product), "EX", 600);
+    res.status(200).json({ success: true, fromCache: false, message: "product found", result: product })
   } catch (error) {
-
+    res.status(500).json({ success: false, message: "Server error while fetching product", error: error.message });
   }
 }
 
