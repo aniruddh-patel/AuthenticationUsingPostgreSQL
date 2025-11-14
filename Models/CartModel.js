@@ -1,66 +1,70 @@
-import Cart from "../Schemas/cartSchema.js"
+import Cart from "../Schemas/cartSchema.js";
 
-export const removeCartItemHelpher = async (user_id, productId) => {
+// REMOVE ITEM FROM CART
+export const removeCartItemHelper = async (user_id, productId) => {
   try {
-    const cart = await Cart.findOne({ "user.user_id": user_id });
-    if (!cart) return null;
+    const updated = await Cart.findOneAndUpdate(
+      { "user.user_id": user_id },
+      { $pull: { items: { product_id: productId } } },
+      { new: true }
+    );
 
-    const initialLength = cart.items.length;
-    cart.items = cart.items.filter((item) => item.product_id !== productId);
-    if (cart.items.length === initialLength) {
-      return null;
-    }
-    await cart.save();
-    return cart;
+    return updated; // returns null if nothing updated
   } catch (error) {
     throw new Error("Error while removing item from cart");
   }
 };
 
-export const listCartHelpher = async (user_id) => {
+
+// LIST CART
+export const listCartHelper = async (user_id) => {
   try {
-    const cart = await Cart.findOne({ "user.user_id": user_id });
-    return cart;
+    return await Cart.findOne({ "user.user_id": user_id });
   } catch (error) {
     throw new Error("Error during querying cart");
   }
 };
 
-export const clearCartHelpher = async (user_id) => {
+
+// CLEAR CART
+export const clearCartHelper = async (user_id) => {
   try {
-    const cart = await Cart.findOne({ "user.user_id": user_id });
-    if (!cart) return null;
-    cart.items = [];
-    await cart.save();
-    return cart;
+    return await Cart.findOneAndUpdate(
+      { "user.user_id": user_id },
+      { $set: { items: [] } },
+      { new: true }
+    );
   } catch (error) {
     throw new Error("Error while clearing cart");
   }
 };
 
 
-export const addToCartHelpher = async (user_id, user_email, productId, product_name, price) => {
+// ADD ITEM TO CART
+export const addToCartHelper = async (user_id, user_email, productId, product_name, price) => {
   try {
-    let cart = await Cart.findOne({ "user.user_id": user_id });
-
-    // cart already presnt
-    if (cart) {
-      const exists = cart.items.some((item) => item.product_id === productId);
-      if (exists) {
-        return { success: false, message: "Item already in cart" };
+    // Try add item only if not already present
+    const result = await Cart.findOneAndUpdate(
+      {
+        "user.user_id": user_id,
+        "items.product_id": { $ne: productId },      // prevents duplicates
+      },
+      {
+        $push: { items: { product_id: productId, product_name, price } },
+        $setOnInsert: { user: { user_id, user_email } },  // if new cart
+      },
+      {
+        new: true,
+        upsert: true,  // creates cart if not found
       }
-      cart.items.push({ product_id: productId, product_name, price });
-      await cart.save();
-      return { success: true, message: "Item added to cart", cart };
+    );
+
+    const exists = result.items.some(i => i.product_id === productId);
+    if (!exists) {
+      return { success: false, message: "Item already in cart" };
     }
 
-    // no cart present
-    const newCart = new Cart({
-      user: { user_id, user_email },
-      items: [{ product_id: productObjectId, product_name, price, }]
-    });
-    await newCart.save();
-    return { success: true, message: "Item added to cart", cart: newCart };
+    return { success: true, message: "Item added to cart", cart: result };
 
   } catch (error) {
     throw new Error(error.message || "Error adding item to cart");

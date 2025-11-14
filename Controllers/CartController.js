@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import { addToCartHelpher, clearCartHelpher, listCartHelpher, removeCartItemHelpher } from "../Models/CartModel.js";
+import { addToCartHelper, clearCartHelper, listCartHelper, removeCartItemHelper } from "../Models/CartModel.js";
 
 export const addToCartHandler = async (req, res) => {
   try {
@@ -10,7 +10,7 @@ export const addToCartHandler = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ success: false, message: "Invalid product ID" });
     }
-    const result = await addToCartHelpher(user_id,user_email,productId,product_name,price);
+    const result = await addToCartHelper(user_id,user_email,productId,product_name,price);
     if (!result.success) {
       return res.status(400).json({ success: false, message: result.message });
     }
@@ -29,7 +29,7 @@ export const removeFromCartHandler = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ success: false, message: "Invalid product ID" });
     }
-    const updatedCart = await removeCartItemHelpher(user_id, productId);
+    const updatedCart = await removeCartItemHelper(user_id, productId);
     if (!updatedCart) {
       return res.status(404).json({ success: false, message: "Cart or product not found" });
     }
@@ -42,7 +42,7 @@ export const removeFromCartHandler = async (req, res) => {
 export const listCartHandler = async (req, res) => {
   try {
     const { user_id } = req.user;
-    const cart = await listCartHelpher(user_id);
+    const cart = await listCartHelper(user_id);
     if (!cart) {
       return res.status(404).json({ success: false, message: "No cart found for this user" });
     }
@@ -59,7 +59,7 @@ export const clearCartHandler = async (req, res) => {
   try {
     const { user_id } = req.user;
 
-    const cleared = await clearCartHelpher(user_id);
+    const cleared = await clearCartHelper(user_id);
     if (!cleared) {
       return res.status(404).json({ success: false, message: "Cart not found or already empty" });
     }
