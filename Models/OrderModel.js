@@ -14,15 +14,12 @@ const resultData = await Product.updateOne({ _id: productId, stock_quantity: { $
 if (resultData.modifiedCount === 0) {
   throw new Error('Out of stock');
 }
-
-
 const result = await queryDB(
     "INSERT INTO order_table (product_id, user_id, status ,seller_id , shop_name) VALUES ($1, $2, 'pending', $3, $4) RETURNING *;",
     [productId, userId, seller_info.seller_id, seller_info.shop_name]
   );
   return result.rows[0];
 };
-
 
 export const findUserOrderById = async (orderId, userId) => {
   const result = await queryDB(
@@ -31,7 +28,6 @@ export const findUserOrderById = async (orderId, userId) => {
   );
   return result.rows[0];
 };
-
 
 export const cancelOrderHelpher = async (orderId) => {
   try {

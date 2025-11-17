@@ -2,7 +2,6 @@ import bcrypt from "bcrypt";
 import { queryDB } from "../Utilities/pgPool.js";
 import { generateUserToken, insertUserToken } from "../Utilities/token.js";
 
-// ✅ Get all active users
 export const getAllUsersHelper = async () => {
   const { rows } = await queryDB(
     "SELECT user_id, user_name, user_email FROM user_info WHERE is_active=true"
@@ -10,7 +9,6 @@ export const getAllUsersHelper = async () => {
   return rows;
 };
 
-// ✅ Get profile by ID
 export const getProfileHelper = async (userId) => {
   const { rows } = await queryDB(
     "SELECT user_id, user_name, user_email, phone, address, gender FROM user_info WHERE user_id=$1 AND is_active=true",
@@ -20,7 +18,6 @@ export const getProfileHelper = async (userId) => {
   return rows[0];
 };
 
-// ✅ Sign up a new user
 export const signUpHelper = async (name, email, password, phone = null, address = null, gender = null) => {
   const { rows: existing } = await queryDB(
     "SELECT * FROM user_info WHERE user_email=$1",
@@ -58,7 +55,6 @@ export const signUpHelper = async (name, email, password, phone = null, address 
   return { user, token };
 };
 
-// ✅ Log in existing user
 export const loginHelper = async (email, password) => {
   const { rows } = await queryDB(
     "SELECT * FROM user_info WHERE user_email=$1",
@@ -82,7 +78,6 @@ export const loginHelper = async (email, password) => {
   return { user, token };
 };
 
-// ✅ Update user name
 export const updateUserHelper = async (userId, name) => {
   const { rows } = await queryDB(
     "UPDATE user_info SET user_name=$1 WHERE user_id=$2 AND is_active=true RETURNING user_id, user_name, user_email",
@@ -92,7 +87,6 @@ export const updateUserHelper = async (userId, name) => {
   return rows[0];
 };
 
-// ✅ Soft delete user
 export const deleteUserHelper = async (userId) => {
   const { rows } = await queryDB(
     "UPDATE user_info SET is_active=false WHERE user_id=$1 RETURNING user_id",
@@ -102,7 +96,6 @@ export const deleteUserHelper = async (userId) => {
   return rows[0];
 };
 
-// ✅ Reactivate account
 export const reactivateAccountHelper = async (name, email, password) => {
   const { rows: existing } = await queryDB(
     "SELECT * FROM user_info WHERE user_email=$1",

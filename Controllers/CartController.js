@@ -4,19 +4,18 @@ import { addToCartHelper, clearCartHelper, listCartHelper, removeCartItemHelper 
 export const addToCartHandler = async (req, res) => {
   try {
     const { productId } = req.params;
-    const { user_id, user_email } = req.user;
-    const { product_name, price } = req.body;
+    const { user_id } = req.user;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ success: false, message: "Invalid product ID" });
     }
-    const result = await addToCartHelper(user_id,user_email,productId,product_name,price);
-    if (!result.success) {
-      return res.status(400).json({ success: false, message: result.message });
+    const result = await addToCartHelper(user_id, productId);
+    if (result === 0) {
+      return res.status(400).json({ success: false, message: "Item already in cart" });
     }
-    res.status(200).json({success: true,message: result.message});
+    res.status(200).json({ success: true, message: "Item added to cart" });
   } catch (error) {
-    res.status(500).json({success: false,message: "Server error while adding to cart",error: error.message,});
+    res.status(500).json({ success: false, message: "Server error while adding to cart" });
   }
 };
 
@@ -29,29 +28,32 @@ export const removeFromCartHandler = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ success: false, message: "Invalid product ID" });
     }
-    const updatedCart = await removeCartItemHelper(user_id, productId);
-    if (!updatedCart) {
-      return res.status(404).json({ success: false, message: "Cart or product not found" });
+
+    const deletedCount = await removeCartItemHelper(user_id, productId);
+
+    if (deletedCount === 0) {
+      return res.status(404).json({ success: false, message: "Item not found in cart" });
     }
-    res.status(200).json({ success: true, message: "Item removed from cart", cart: updatedCart });
+    return res.status(200).json({ success: true, message: "Item removed from cart" });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error while removing item", error: error.message });
+    res.status(500).json({ success: false, message: "Server error while removing item" });
   }
 };
 
 export const listCartHandler = async (req, res) => {
   try {
     const { user_id } = req.user;
-    const cart = await listCartHelper(user_id);
-    if (!cart) {
-      return res.status(404).json({ success: false, message: "No cart found for this user" });
-    }
-    if (cart.items.length === 0) {
+
+    const cartItems = await listCartHelper(user_id);
+
+    if (!cartItems || cartItems.length === 0) {
       return res.status(200).json({ success: true, message: "Cart is empty", items: [] });
     }
-    res.status(200).json({success: true,message: "Cart fetched successfully",items: cart.items});
+    res.status(200).json({ success: true, message: "Cart fetched successfully", items: cartItems });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error while fetching cart", error: error.message });
+    res.status(500).json({ success: false, message: "Server error while fetching cart" });
   }
 };
 
@@ -59,13 +61,14 @@ export const clearCartHandler = async (req, res) => {
   try {
     const { user_id } = req.user;
 
-    const cleared = await clearCartHelper(user_id);
-    if (!cleared) {
+    const deletedCount = await clearCartHelper(user_id);
+
+    if (deletedCount === 0) {
       return res.status(404).json({ success: false, message: "Cart not found or already empty" });
     }
+    return res.status(200).json({ success: true, message: "Cart cleared successfully" });
 
-    res.status(200).json({ success: true, message: "Cart cleared successfully" });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error while clearing cart", error: error.message });
+    res.status(500).json({ success: false, message: "Server error while clearing cart" });
   }
 };

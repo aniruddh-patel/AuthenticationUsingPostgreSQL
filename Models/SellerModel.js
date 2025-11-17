@@ -3,7 +3,6 @@ import { queryDB } from "../Utilities/pgPool.js";
 import { generateSellerToken } from "../Utilities/token.js"; // You can rename insertUserToken → insertSellerToken later if desired
 import { generateSellerId } from "../Utilities/idGenerator.js";
 
-// ✅ Get all active sellers
 export const getAllSellersHelper = async () => {
   const { rows } = await queryDB(
     "SELECT seller_id, seller_name, seller_email, shop_name FROM seller_info WHERE is_active = true"
@@ -11,7 +10,6 @@ export const getAllSellersHelper = async () => {
   return rows;
 };
 
-// ✅ Get seller profile by ID
 export const sellerGetProfileHelper = async (sellerId) => {
   const { rows } = await queryDB(
     `SELECT seller_id, seller_name, seller_email, gst_number, shop_name, 
@@ -24,7 +22,6 @@ export const sellerGetProfileHelper = async (sellerId) => {
   return rows[0];
 };
 
-// ✅ Register a new seller
 export const sellerSignUpHelper = async (
   seller_name,
   seller_email,
@@ -77,7 +74,6 @@ export const sellerSignUpHelper = async (
   return { seller, token };
 };
 
-// ✅ Seller login
 export const sellerLoginHelper = async (seller_email, password) => {
   const { rows } = await queryDB(
     "SELECT * FROM seller_info WHERE seller_email = $1",
@@ -95,7 +91,6 @@ export const sellerLoginHelper = async (seller_email, password) => {
   return { seller, token };
 };
 
-// ✅ Update seller info (name, shop name, shop address)
 export const sellerUpdateHelper = async (sellerId, seller_name, shop_name, shop_address) => {
   const { rows } = await queryDB(
     `UPDATE seller_info 
@@ -111,10 +106,8 @@ export const sellerUpdateHelper = async (sellerId, seller_name, shop_name, shop_
   return rows[0];
 };
 
-// ✅ Deactivate seller (soft delete)
 export const sellerDeleteHelper = async (sellerId) => {
   const { rows } = await queryDB(
-    
   "UPDATE seller_info SET is_active = false WHERE seller_id = $1::varchar RETURNING seller_id",
   [sellerId]
 );
@@ -122,7 +115,7 @@ export const sellerDeleteHelper = async (sellerId) => {
   return rows[0];
 };
 
-// ✅ Reactivate seller account
+
 export const sellerReactivateAccountHelper = async (seller_name, seller_email, password) => {
   const { rows: existing } = await queryDB(
     "SELECT * FROM seller_info WHERE seller_email = $1",
